@@ -1,0 +1,259 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Google Classroom</title>
+<link rel="icon" href="https://ssl.gstatic.com/classroom/ic_product_classroom_16.png">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&family=Press+Start+2P&display=swap">
+<style>
+:root{--bg:#07050a;--surface:#120e1b;--border:rgba(255,255,255,0.08);--accent:#ff4058;--text:#fff;--muted:#a39bb8}
+*{box-sizing:border-box}
+body{margin:0;height:100vh;overflow:hidden;background:var(--bg);color:var(--text);font-family:'Inter',sans-serif}
+body:before{content:"";position:fixed;inset:0;z-index:-2;background:linear-gradient(90deg,#07050ab8,#07050a18),url("https://images.hdqwalls.com/download/sasuke-uchiha-lightning-blade-rain-dark-5n-5120x2880.jpg?dl=1") center/cover}
+
+#loadingScreen{position:fixed;inset:0;z-index:9999;background:#050308;display:flex;flex-direction:column;align-items:center;justify-content:center;transition:opacity 0.6s ease}
+#loadingScreen.fade-out{opacity:0;pointer-events:none}
+.sharingan-loader{width:110px;height:110px;border-radius:50%;background:radial-gradient(circle, #ff1a1a 0%, #cc0000 60%, #800000 100%);border:4px solid #0b0204;box-shadow:0 0 45px rgba(255, 0, 0, 0.6), inset 0 0 20px rgba(0,0,0,0.8);position:relative;animation:spinSharingan 7s linear infinite}
+.sharingan-ring{position:absolute;inset:12px;border-radius:50%;border:2px solid #000;background:transparent}
+.sharingan-pupil{position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);width:22px;height:22px;background:#000;border-radius:50%;border:1px solid #ff1a1a}
+.tomoe{position:absolute;width:14px;height:20px;background:#000;border-radius:50% 50% 40% 40%}
+.tomoe::after{content:"";position:absolute;top:-3px;left:2px;width:8px;height:8px;background:#000;border-radius:50%}
+.t1{top:10px;left:50%;transform:translateX(-50%)}
+.t2{bottom:14px;left:14px;transform:rotate(120deg)}
+.t3{bottom:14px;right:14px;transform:rotate(240deg)}
+@keyframes spinSharingan{0%{transform:rotate(0deg)}100%{transform:rotate(360deg)}}
+.load-title{margin-top:20px;font-size:14px;font-family:"Press Start 2P",monospace;letter-spacing:.1em;color:#ff4d62;text-shadow:0 0 10px #ff1a3c88}
+.load-sub{margin-top:6px;font-size:11px;color:var(--muted);letter-spacing:.05em}
+
+.bar{margin:14px 20px;height:44px;border:1px solid var(--border);border-radius:14px;padding:0 16px;display:flex;gap:12px;align-items:center;background:rgba(18,14,27,0.75);backdrop-filter:blur(16px);font-size:11px}
+.eye{width:16px;height:16px;border-radius:50%;border:2px solid var(--accent);box-shadow:0 0 10px var(--accent)}
+.bar b{color:var(--accent);letter-spacing:.1em;font-family:"Press Start 2P",monospace;font-size:9px}
+.bar .state{margin-left:auto;color:#10b981;font-weight:500}
+
+.apps{display:flex;gap:16px;margin:16px 20px;flex-wrap:wrap;max-width:600px}
+.app{width:82px;text-align:center;font-size:11px;cursor:pointer;color:var(--muted);transition:0.2s}
+.app:hover{color:var(--text)}
+.app i{font-style:normal;width:52px;height:52px;display:grid;place-items:center;margin:auto auto 6px;border:1px solid var(--border);border-radius:16px;background:linear-gradient(135deg,rgba(230,50,79,0.2),rgba(85,27,75,0.3));font-size:18px;box-shadow:0 4px 20px rgba(0,0,0,0.4);transition:.2s}
+.app:hover i{transform:translateY(-3px);border-color:rgba(255,255,255,0.2)}
+
+.dock{position:fixed;z-index:10;bottom:16px;left:50%;transform:translateX(-50%);display:flex;gap:6px;padding:6px;border:1px solid var(--border);border-radius:18px;background:rgba(16,13,25,0.85);backdrop-filter:blur(20px)}
+.dock button{height:36px;padding:0 14px;border:0;border-radius:10px;background:transparent;color:var(--muted);font-size:12px;font-weight:500;cursor:pointer;font-family:inherit;transition:all 0.2s}
+.dock button:hover,.dock button.on{background:rgba(255,255,255,0.06);color:var(--text)}
+.dock button.on{color:var(--accent);background:rgba(255,64,88,0.1)}
+
+.win{display:none;position:fixed;z-index:2;inset:72px 24px 72px;border:1px solid var(--border);border-radius:20px;background:rgba(17,13,30,0.95);box-shadow:0 30px 90px rgba(0,0,0,0.7);backdrop-filter:blur(22px);overflow:hidden;flex-direction:column}
+.win.show{display:flex}
+.title{height:48px;padding:0 18px;border-bottom:1px solid var(--border);display:flex;align-items:center;gap:10px;font-size:12px;font-weight:500}
+.title .right{margin-left:auto;display:flex;gap:8px}
+.mini{border:1px solid var(--border);border-radius:8px;background:rgba(255,255,255,0.04);color:var(--text);padding:5px 10px;cursor:pointer;font-size:11px;font-family:inherit;transition:0.2s}
+.mini:hover{background:rgba(255,255,255,0.08)}
+.content{flex:1;overflow-y:auto;padding:24px;display:flex;flex-direction:column}
+
+.kicker{font-size:10px;color:var(--accent);letter-spacing:.12em;font-weight:600}
+.content h1{margin:6px 0 20px;font-size:20px;font-weight:600;letter-spacing:-.03em}
+
+.grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(210px,1fr));gap:14px}
+.card{padding:16px;display:flex;flex-direction:column;justify-content:end;text-decoration:none;color:var(--text);border:1px solid var(--border);border-radius:14px;background:linear-gradient(135deg,rgba(69,35,93,0.3),rgba(21,16,34,0.6));transition:.2s;cursor:pointer}
+.card:hover{transform:translateY(-2px);border-color:rgba(255,255,255,0.2);background:linear-gradient(135deg,rgba(69,35,93,0.5),rgba(21,16,34,0.8))}
+.card small{color:var(--muted);font-size:10px;letter-spacing:.05em}
+.card h2{font-size:13px;font-weight:500;margin:6px 0 0}
+
+/* Browser View */
+#browserContent{display:none;flex:1;flex-direction:column;height:100%}
+#browserContent.active{display:flex}
+.browser-toolbar{display:flex;gap:8px;margin-bottom:10px}
+.browser-toolbar select{background:rgba(255,255,255,0.06);color:#fff;border:1px solid var(--border);padding:6px 10px;border-radius:8px;font-family:inherit;font-size:11px;outline:none}
+.browser-frame-box{flex:1;width:100%;background:#000;border:1px solid var(--border);border-radius:14px;overflow:hidden}
+.browser-frame-box iframe{width:100%;height:100%;border:none}
+
+#gamePlayerContainer{display:none;width:100%;flex:1;flex-direction:column;position:relative}
+#gamePlayerContainer.active{display:flex}
+.player-topbar{display:flex;align-items:center;gap:12px;margin-bottom:12px;font-size:12px}
+.player-topbar button{background:var(--accent);color:#fff;border:none;padding:6px 14px;border-radius:8px;cursor:pointer;font-weight:500;font-family:inherit;font-size:11px}
+.game-frame-box{flex:1;width:100%;background:#000;border:1px solid var(--border);border-radius:14px;overflow:hidden}
+.game-frame-box iframe{width:100%;height:100%;border:none;background:#000}
+</style>
+</head>
+<body>
+
+<div id="loadingScreen">
+  <div class="sharingan-loader">
+    <div class="sharingan-ring"></div>
+    <div class="sharingan-pupil"></div>
+    <div class="tomoe t1"></div>
+    <div class="tomoe t2"></div>
+    <div class="tomoe t3"></div>
+  </div>
+  <div class="load-title">UCHIHA OS</div>
+  <div class="load-sub">Initializing Shinobi Workspace Engine...</div>
+</div>
+
+<header class="bar">
+  <i class="eye"></i>
+  <span>UCHIHA <b>OS</b></span>
+  <span>GITHUB REPO ACTIVE</span>
+  <span class="state">● SECURE</span>
+</header>
+
+<section class="apps">
+  <div class="app" id="openBrowserApp"><i>🌐</i>Web Proxy</div>
+  <div class="app" id="openGamesApp"><i>◉</i>Games Vault</div>
+  <div class="app" id="openToolsApp"><i>⚡️</i>Tools</div>
+</section>
+
+<nav class="dock">
+  <button id="dockHome" onclick="win.classList.remove('show')">Home</button>
+  <button id="dockBrowser" onclick="openBrowserView()">Web Proxy</button>
+  <button id="dockGames" onclick="openGamesView()">Games</button>
+  <button id="dockTools" onclick="openToolsView()">Tools</button>
+</nav>
+
+<section class="win" id="win">
+  <header class="title">
+    <span id="winTitle">UCHIHA OS / WEB PROXY</span>
+    <span class="right">
+      <button class="mini" id="full">Full Screen</button>
+      <button class="mini" id="close">×</button>
+    </span>
+  </header>
+
+  <main class="content" id="mainContentArea">
+    <!-- WEB BROWSER / PROXY VIEW -->
+    <div id="browserContent" class="active">
+      <div class="browser-toolbar">
+        <select id="mirrorSelect" onchange="switchMirror(this.value)">
+          <option value="https://iv.ggtyler.dev">Mirror 1 (GGTyler)</option>
+          <option value="https://invidious.privacyredirect.com">Mirror 2 (PrivacyRedirect)</option>
+          <option value="https://lite.duckduckgo.com/lite/">Mirror 3 (DuckDuckGo Lite)</option>
+        </select>
+      </div>
+      <div class="browser-frame-box">
+        <iframe id="proxyFrame" src="https://iv.ggtyler.dev" allowfullscreen allow="autoplay; fullscreen; pointer-lock"></iframe>
+      </div>
+    </div>
+
+    <!-- GAMES VIEW -->
+    <div id="gamesContent" style="display:none;">
+      <div class="kicker">// UNBLOCKED MIRROR VAULT</div>
+      <h1>Unblocked Games Vault</h1>
+      <div class="grid" id="grid"></div>
+    </div>
+
+    <!-- ACTIVE GAME EMBED -->
+    <div id="gamePlayerContainer">
+      <div class="player-topbar">
+        <button id="backButton" onclick="openGamesView()">← Back to Games</button>
+        <span id="activeAppTitle" style="color:var(--muted); font-weight:500;">Loading...</span>
+      </div>
+      <div class="game-frame-box">
+        <iframe id="directGameFrame" allowfullscreen allow="autoplay; fullscreen; pointer-lock; keyboard-map"></iframe>
+      </div>
+    </div>
+
+    <!-- TOOLS VIEW -->
+    <div id="toolsContent" style="display:none;">
+      <div class="kicker">// SYSTEM UTILITIES</div>
+      <h1>Quick Access Portals</h1>
+      <div class="grid">
+        <div class="card" onclick="location.reload()"><small>SYSTEM</small><h2>Flush Engine</h2></div>
+      </div>
+    </div>
+  </main>
+</section>
+
+<script>
+window.addEventListener('load', () => {
+  const loader = document.getElementById('loadingScreen');
+  setTimeout(() => loader.classList.add('fade-out'), 700);
+});
+
+const games = [
+  ['Moto X3M', 'DRIVING', 'https://images-of-net.github.io/moto-x3m/'],
+  ['Slope', 'RUNNER', 'https://bubbls.github.io/slope/'],
+  ['Drive Mad', 'DRIVING', 'https://geniear.github.io/drive-mad/'],
+  ['Stickman Hook', 'ACTION', 'https://sygiccom.github.io/stickman-hook/']
+];
+
+const win = document.querySelector('#win');
+const grid = document.querySelector('#grid');
+const winTitle = document.querySelector('#winTitle');
+const browserContent = document.querySelector('#browserContent');
+const gamesContent = document.querySelector('#gamesContent');
+const gamePlayerContainer = document.querySelector('#gamePlayerContainer');
+const toolsContent = document.querySelector('#toolsContent');
+const directGameFrame = document.querySelector('#directGameFrame');
+const proxyFrame = document.querySelector('#proxyFrame');
+const activeAppTitle = document.querySelector('#activeAppTitle');
+
+grid.innerHTML = games.map((game) => `
+  <div class="card" onclick="launchGameItem('${game[0]}', '${game[2]}')">
+    <small>${game[1]} · MIRROR</small>
+    <h2>${game[0]}</h2>
+  </div>
+`).join('');
+
+function switchMirror(url) {
+  proxyFrame.src = url;
+}
+
+function updateDock(name) {
+  document.querySelectorAll('.dock button').forEach(b => b.classList.remove('on'));
+  if(name === 'browser') document.getElementById('dockBrowser').classList.add('on');
+  if(name === 'games') document.getElementById('dockGames').classList.add('on');
+  if(name === 'tools') document.getElementById('dockTools').classList.add('on');
+}
+
+function hideAllViews() {
+  browserContent.classList.remove('active');
+  gamesContent.style.display = 'none';
+  gamePlayerContainer.classList.remove('active');
+  toolsContent.style.display = 'none';
+}
+
+function openBrowserView() {
+  win.classList.add('show');
+  hideAllViews();
+  browserContent.classList.add('active');
+  winTitle.textContent = 'UCHIHA OS / WEB PROXY';
+  updateDock('browser');
+}
+
+function openGamesView() {
+  win.classList.add('show');
+  hideAllViews();
+  gamesContent.style.display = 'block';
+  winTitle.textContent = 'UCHIHA OS / GAMES';
+  updateDock('games');
+}
+
+function openToolsView() {
+  win.classList.add('show');
+  hideAllViews();
+  toolsContent.style.display = 'block';
+  winTitle.textContent = 'UCHIHA OS / TOOLS';
+  updateDock('tools');
+}
+
+document.querySelector('#openBrowserApp').onclick = openBrowserView;
+document.querySelector('#openGamesApp').onclick = openGamesView;
+document.querySelector('#openToolsApp').onclick = openToolsView;
+
+document.querySelector('#close').onclick = () => {
+  win.classList.remove('show');
+  directGameFrame.src = 'about:blank';
+};
+
+document.querySelector('#full').onclick = () => {
+  document.fullscreenElement ? document.exitFullscreen() : win.requestFullscreen();
+};
+
+function launchGameItem(name, url) {
+  hideAllViews();
+  gamePlayerContainer.classList.add('active');
+  activeAppTitle.textContent = name;
+  directGameFrame.src = url;
+}
+</script>
+</body>
+</html>
